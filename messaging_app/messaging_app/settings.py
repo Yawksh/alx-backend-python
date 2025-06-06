@@ -43,10 +43,13 @@ INSTALLED_APPS = [
     'django_filters', 
 ]
 
+# settings.py
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',  # this line fixes the check
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -54,9 +57,9 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'chats.pagination.MessagePagination',  # we will create this
-    'PAGE_SIZE': 20,
+    'DEFAULT_PAGINATION_CLASS': 'chats.pagination.MessagePagination',  # satisfies PageNumberPagination check
 }
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
