@@ -14,3 +14,9 @@ def log_message_edit(sender, instance, **kwargs):
         if old.content != instance.content:
             MessageHistory.objects.create(message=instance, old_content=old.content)
             instance.edited = True
+@receiver(post_delete, sender=User)
+def delete_related_user_data(sender, instance, **kwargs):
+    # Assuming on_delete=CASCADE cleans up most
+    MessageHistory.objects.filter(message__sender=instance).delete()
+    MessageHistory.objects.filter(message__receiver=instance).delete()
+    Notification.objects.filter(user=instance).delete()
