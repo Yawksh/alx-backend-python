@@ -10,6 +10,6 @@ class UnreadMessagesManager(models.Manager):
         return (
             super()
             .get_queryset()
-            .filter(receiver=user, read=False)
-            .only('id', 'sender', 'content', 'timestamp')
+            .filter(receiver=user, read=False
+                    )
         )
