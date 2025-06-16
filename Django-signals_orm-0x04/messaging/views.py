@@ -37,3 +37,7 @@ def threaded_conversation(request, convo_id):
         'conversation': convo,
         'thread_tree':  thread_tree,
     })
+def unread_inbox(request):
+    user = request.user
+    unread = Message.unread_messages.unread_for(user)
+    return render(request, 'messaging/unread_inbox.html', {'unread_messages': unread})

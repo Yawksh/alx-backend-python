@@ -1,7 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
-
+class UnreadMessagesManager(models.Manager):
+    def unread_for(self, user):
+        return (
+            self.get_queryset()
+            .filter(receiver=user, read=False)
+            .only('id', 'sender', 'content', 'timestamp')
+        )
 
 class Message(models.Model):
     sender = models.ForeignKey(
@@ -26,11 +32,17 @@ class Message(models.Model):
         on_delete=models.CASCADE
     )
     edited = models.BooleanField(default=False)
+    # 🟡 New field to track read/unread status
+    read = models.BooleanField(default=False)
+
+    # 🔵 Attach managers
+    objects = models.Manager()  # default manager
+    unread_messages = UnreadMessagesManager()  # custom manager
 
     def __str__(self):
         return f"{self.sender} -> {self.receiver}: {self.content[:20]}…"
 
-    
+
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.ForeignKey(Message, on_delete=models.CASCADE)
@@ -41,3 +53,5 @@ class MessageHistory(models.Model):
     old_content = models.TextField()
     edited_at = models.DateTimeField(auto_now_add=True)
     edited_by = models.ForeignKey(User,on_delete  = models.CASCADE,related_name= 'updated_by')
+
+
