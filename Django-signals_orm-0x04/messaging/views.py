@@ -1,7 +1,8 @@
 
 
 from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required,cache_page
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_page
 from .models import Message, Conversation
 from .utils  import build_thread_tree  # from previous example
 @login_required
