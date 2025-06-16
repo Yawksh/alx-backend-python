@@ -10,9 +10,7 @@ from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsParticipantOfConversation
 from .filters import MessageFilter
-from django.views.decorators.cache import cache_page
-from django.shortcuts import render, get_object_or_404
-from .models import Conversation
+
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
@@ -47,11 +45,3 @@ class MessageViewSet(viewsets.ModelViewSet):
             # Covers the HTTP_403_FORBIDDEN requirement
             raise PermissionDenied(detail="You are not a participant in this conversation.", code=status.HTTP_403_FORBIDDEN)
         serializer.save(sender=self.request.user)
-@cache_page(60)  # cache for 60 seconds
-def conversation_detail(request, convo_id):
-    convo = get_object_or_404(Conversation, id=convo_id)
-    messages = convo.messages.select_related('sender').all()
-    return render(request, 'chats/conversation_detail.html', {
-        'conversation': convo,
-        'messages': messages
-    })

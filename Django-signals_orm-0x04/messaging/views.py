@@ -1,7 +1,7 @@
 
 
 from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,cache_page
 from .models import Message, Conversation
 from .utils  import build_thread_tree  # from previous example
 @login_required
@@ -44,4 +44,13 @@ def inbox(request):
     )
     return render(request, 'messaging/inbox.html', {
         'unread_messages': unread_messages
+
+    })
+@cache_page(60)  # cache for 60 seconds
+def conversation_detail(request, convo_id):
+    convo = get_object_or_404(Conversation, id=convo_id)
+    messages = convo.messages.select_related('sender').all()
+    return render(request, 'chats/conversation_detail.html', {
+        'conversation': convo,
+        'messages': messages
     })
