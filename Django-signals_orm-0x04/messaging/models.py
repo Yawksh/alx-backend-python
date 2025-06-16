@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from .managers import UnreadMessagesManager
+
 class UnreadMessagesManager(models.Manager):
     def unread_for(self, user):
         return (
@@ -35,10 +37,9 @@ class Message(models.Model):
     # 🟡 New field to track read/unread status
     read = models.BooleanField(default=False)
 
-    # 🔵 Attach managers
-    objects = models.Manager()  # default manager
-    unread_messages = UnreadMessagesManager()  # custom manager
-
+   # Managers
+    objects = models.Manager()            # The default manager
+    unread  = UnreadMessagesManager()     # Our custom unread-only manager
     def __str__(self):
         return f"{self.sender} -> {self.receiver}: {self.content[:20]}…"
 

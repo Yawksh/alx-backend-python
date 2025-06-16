@@ -37,7 +37,13 @@ def threaded_conversation(request, convo_id):
         'conversation': convo,
         'thread_tree':  thread_tree,
     })
-def unread_inbox(request):
-    user = request.user
-    unread = Message.unread_messages.unread_for(user)
-    return render(request, 'messaging/unread_inbox.html', {'unread_messages': unread})
+@login_required
+def inbox(request):
+    """
+    Show the user only their unread messages,
+    using our UnreadMessagesManager.
+    """
+    unread_messages = Message.unread.unread_for_user(request.user)
+    return render(request, 'messaging/inbox.html', {
+        'unread_messages': unread_messages
+    })
