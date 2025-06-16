@@ -1,7 +1,10 @@
 
 
 from django.shortcuts import render, get_object_or_404
-from .models import Message@login_required
+from django.contrib.auth.decorators import login_required
+from .models import Message, Conversation
+from .utils  import build_thread_tree  # from previous example
+@login_required
 def delete_user(request):
     user = request.user
     user.delete()
@@ -9,17 +12,28 @@ def delete_user(request):
 
 
 
-def conversation_thread(request, convo_id):
-    # 1. Fetch top‑level messages in this conversation
-    top_level = (
-        Message.objects
-               .filter(conversation_id=convo_id, parent_message__isnull=True)
-               .select_related('sender', 'receiver')           # join sender/receiver
-               .prefetch_related(
-                   'replies__sender',     # for each reply, also join its sender
-                   'replies__replies'     # prefetch nested replies (one level deep)
-               )
-    )
+# messaging/views.py
 
-    context = {'threads': top_level}
-    return render(request, 'messaging/thread_list.html', context)
+
+@login_required
+def threaded_conversation(request, convo_id):
+    # 1. Load the conversation (optional, for context)
+    convo = get_object_or_404(Conversation, id=convo_id)
+
+    # 2. Fetch *all* messages in this conversation by this user
+    all_msgs = (
+        Message.objects
+               .filter(conversation=convo, sender=request.user)
+               .select_related('sender', 'receiver')
+               .prefetch_related('replies__sender', 'replies__replies')
+    )
+    #    ^^^^^ Message.objects.filter  ^^^^^ sender=request.user
+
+    # 3. Build a nested tree of messages + replies
+    thread_tree = build_thread_tree(all_msgs)
+
+    # 4. Render in your template
+    return render(request, 'messaging/threaded.html', {
+        'conversation': convo,
+        'thread_tree':  thread_tree,
+    })
