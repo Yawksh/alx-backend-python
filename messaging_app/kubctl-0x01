@@ -1,0 +1,20 @@
+#!/bin/bash
+# Scale the deployment to 3 replicas
+kubectl scale deployment django-app --replicas=3
+
+# Verify pods
+kubectl get pods
+
+# Port-forward to access the service
+kubectl port-forward service/django-service 8000:8000 &
+PF_PID=$!
+sleep 5  # Wait for port-forward
+
+# Perform load testing (install wrk first: sudo apt install wrk)
+wrk -t2 -c10 -d30s http://localhost:8000/
+
+# Monitor resource usage
+kubectl top pods
+
+# Cleanup
+kill $PF_PID

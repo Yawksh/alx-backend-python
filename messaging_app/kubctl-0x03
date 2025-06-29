@@ -1,0 +1,23 @@
+#!/bin/bash
+# Trigger rolling update
+kubectl apply -f blue_deployment.yaml
+
+# Monitor update
+kubectl rollout status deployment/django-app &
+
+# Port-forward for testing
+kubectl port-forward service/django-service 8000:8000 &
+PF_PID=$!
+sleep 5
+
+# Continuous traffic test
+for i in {1..30}; do
+  curl -s http://localhost:8000/health/ >/dev/null && echo "OK" || echo "FAIL"
+  sleep 1
+done
+
+# Verify pods
+kubectl get pods
+
+# Cleanup
+kill $PF_PID

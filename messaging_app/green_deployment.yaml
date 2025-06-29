@@ -1,0 +1,21 @@
+# Copy content from Task 1's deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app-green
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: django-app
+      version: green  # Unique label
+  template:
+    metadata:
+      labels:
+        app: django-app
+        version: green
+    spec:
+      containers:
+      - name: django-container
+        image: your-django-image:2.0  # Updated image
+        # ... (same as blue_deployment.yaml)
