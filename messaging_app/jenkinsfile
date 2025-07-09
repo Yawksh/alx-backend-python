@@ -1,0 +1,57 @@
+pipeline {
+    agent {
+        docker { image 'python:3.11-slim' }
+    }
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/   Yawksh/alx-backend-python.git'
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                dir('messaging_app') {
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install --upgrade pip
+                        pip install pytest
+                        pip install -r requirements.txt
+                    '''
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                dir('messaging_app') {
+                    sh '''
+                        . venv/bin/activate
+                        pytest --junitxml=report.xml
+                    '''
+                }
+            }
+            post {
+                always {
+                    junit 'messaging_app/report.xml'
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build('messaging_app_image', '-f messaging_app/Dockerfile messaging_app')
+                }
+            }
+        }
+        stage('Push To Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
+                        docker.image('messaging_app_image:latest').push()
+                        echo "Pushing ..."
+                    }
+                }
+            }
+        }
+    }
+}
